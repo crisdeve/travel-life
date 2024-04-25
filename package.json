@@ -25,6 +25,7 @@
     "/public/build"
   ],
   "dependencies": {
+    "@emotion/react": "^11.11.4",
     "@prisma/client": "^4.16.2",
     "@remix-run/css-bundle": "^2.8.1",
     "@remix-run/node": "^2.8.1",
@@ -33,6 +34,9 @@
     "@shopify/shopify-api": "^9.7.2",
     "@shopify/shopify-app-remix": "^2.8.1",
     "@shopify/shopify-app-session-storage-memory": "^3.0.4",
+    "@table-library/react-table-library": "^4.1.7",
+    "@tanstack/react-table": "^8.16.0",
+    "antd": "^5.16.4",
     "bcryptjs": "^2.4.3",
     "isbot": "^4.4.0",
     "react": "^18.2.0",

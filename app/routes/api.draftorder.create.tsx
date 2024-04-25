@@ -14,7 +14,6 @@ const input = {
   lineItems: lineItems,
 }
 
-
 export const loader = async () => {
   const order = await postDraftOrder(input, true)
 
