@@ -216,7 +216,7 @@ const mutationCalculate = `
   }
 `;
 
-const query = `
+const queryGet = `
   query draftOrderById($id: ID!) {
     draftOrder(id: $id) {
       id
@@ -291,7 +291,7 @@ const putDraftOrder = async (id: number, input: draftOrderMutation) => {
 }
 
 const getDraftOrder = async (id: number) => {
-  const { data, errors } = await shopify.request(query, {
+  const { data, errors } = await shopify.request(queryGet, {
     variables: {
       id: `gid://shopify/DraftOrder/${id}`
     }

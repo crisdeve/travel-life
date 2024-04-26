@@ -1,7 +1,7 @@
 import { useReactTable } from "@tanstack/react-table";
 import { useState } from "react";
 
-import EditableCell from "./EditableCell";
+import EditableCell from "./cell";
 
 const DATA = [
   {

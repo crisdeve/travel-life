@@ -1,7 +1,7 @@
-import { Table } from 'antd';
+import { Button, Table } from 'antd';
 import React, { useState } from 'react';
 
-import EditableCell from './EditableCell';
+import Cell from './cell';
 
 type EditableTableProps = Parameters<typeof Table>[0];
 
@@ -9,29 +9,30 @@ interface DataType {
   key: React.Key;
   sku: string;
   productName: string;
-  variantName: string,
+  variantName: string;
+  quantity: number;
+  price: string;
 }
 
 type ColumnTypes = Exclude<EditableTableProps['columns'], undefined>;
 
-const DATA = [
-  {
-    key: 1,
-    sku: '232423432',
-    productName: 'Carro',
-    variantName: 'Rojo',
-  },
-  {
-    key: 2,
-    sku: '102423432',
-    productName: 'Carro',
-    variantName: 'Verde',
-  },
-]
+const nRows = 5;
+
+const defaultData = () => {
+  return Array(nRows)
+    .fill({
+      sku: '',
+      productName: '',
+      variantName: '',
+      quantity: 1,
+      price: '$0,00',
+    })
+    .map((item, i) => ({ key: i, ...item }))
+}
 
 const OrderTable: React.FC = () => {
-  const [dataSource, setDataSource] = useState<DataType[]>(DATA);
-  /* const [count, setCount] = useState(2); */
+  const [dataSource, setDataSource] = useState<DataType[]>(defaultData());
+  const [count, setCount] = useState(nRows);
 
   const defaultColumns = [
     {
@@ -47,21 +48,33 @@ const OrderTable: React.FC = () => {
     {
       title: 'Déclinaison',
       dataIndex: 'variantName',
+    },
+    {
+      title: 'Quantity',
+      dataIndex: 'quantity',
+      width: '5%',
+      editable: true,
+    },
+    {
+      title: 'Price',
+      dataIndex: 'price',
     }
   ];
 
-  /* const handleAdd = () => {
+  const handleAdd = () => {
     const newData: DataType = {
       key: count,
       sku: '',
       productName: '',
       variantName: '',
+      quantity: 1,
+      price: '',
     };
     setDataSource([...dataSource, newData]);
     setCount(count + 1);
-  }; */
+  };
 
-  /* const handleSave = (row: DataType) => {
+  const handleSave = (row: DataType) => {
     const newData = [...dataSource];
     const index = newData.findIndex((item) => row.key === item.key);
     const item = newData[index];
@@ -70,11 +83,11 @@ const OrderTable: React.FC = () => {
       ...row,
     });
     setDataSource(newData);
-  }; */
+  };
 
   const components = {
     body: {
-      cell: EditableCell,
+      cell: Cell,
     },
   };
 
@@ -89,20 +102,19 @@ const OrderTable: React.FC = () => {
         editable: col.editable,
         dataIndex: col.dataIndex,
         title: col.title,
-        onClick: (e) => console.log({e, record})
+        handleSave
       }),
     };
   });
 
   return (
     <div>
-      {/* <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
-        Add a row
-      </Button> */}
+      <Button onClick={handleAdd} type="primary" style={{ marginBottom: 16 }}>
+        Ajouter une ligne
+      </Button>
       
       <Table
         components={components}
-        rowClassName={() => 'editable-row'}
         bordered
         dataSource={dataSource}
         columns={columns as ColumnTypes}
