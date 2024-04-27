@@ -1,6 +1,6 @@
 import { json } from "@remix-run/node";
 
-import { postDraftOrder } from "~/services/graphql/draftOrders";
+import { createDraftOrder } from "~/services/graphql/draftOrders";
 
 const lineItems = [
   {
@@ -15,7 +15,7 @@ const input = {
 }
 
 export const loader = async () => {
-  const order = await postDraftOrder(input, true)
+  const order = await createDraftOrder(input)
 
   return json({ order })
 };

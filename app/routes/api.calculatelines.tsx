@@ -1,8 +1,6 @@
 import { json } from "@remix-run/node";
 
-import { updateDraftOrder } from "~/services/graphql/draftOrders";
-
-const draftId = 1154590474519;
+import { calculateDraftOrderPerLines } from "~/services/graphql/draftOrders";
 
 const lineItems = [
   {
@@ -20,12 +18,13 @@ const lineItems = [
 ]
 
 const input = {
+  email: 'daihana.marin@gradiweb.com',
   acceptAutomaticDiscounts: true,
   lineItems: lineItems,
 }
 
 export const loader = async () => {
-  const order = await updateDraftOrder(draftId, input)
+  const order = await calculateDraftOrderPerLines(input)
 
   return json({ order })
 };

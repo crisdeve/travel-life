@@ -1,6 +1,6 @@
 import { LoaderFunctionArgs, json } from "@remix-run/node";
 
-import { getFirstVariants, getProductsByQuery } from "~/services/graphql/products";
+import { getFirstVariants, getProductsByQuery } from "~/services/graphql/productsVariants";
 
 export const loader = async ({
   request,
@@ -11,8 +11,6 @@ export const loader = async ({
     const { data } = await getFirstVariants()
     return json({ data })
   }
-
-  console.log(sku);
   
   const { data } = await getProductsByQuery(sku)
 

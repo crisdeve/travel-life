@@ -1,81 +1,41 @@
 import { draftOrderMutation } from '../interfaces/orderAndLineItem';
 import shopify from '../shopify.server'
 
-const DraftOrderLineItemFragment = `
-fragment DraftOrderLineItemFragment on DraftOrderLineItem {
-  id
+const DraftOrderLineItem = `
   appliedDiscount {
     amountSet {
-      presentmentMoney {
-        amount
-        currencyCode
-        __typename
-      }
       shopMoney {
         amount
         currencyCode
-        __typename
       }
-      __typename
     }
     value
     valueType
     description
-    __typename
   }
   isCustomLineItem: custom
   discountedTotalSet {
-    presentmentMoney {
-      amount
-      currencyCode
-      __typename
-    }
     shopMoney {
       amount
       currencyCode
-      __typename
     }
-    __typename
   }
   discountedUnitPriceSet {
-    presentmentMoney {
-      amount
-      currencyCode
-      __typename
-    }
     shopMoney {
       amount
       currencyCode
-      __typename
     }
-    __typename
   }
-  image {
-    id
-    altText
-    transformedSrc: url
-    __typename
-  }
-  isGiftCard
-  originalTotal
   originalUnitPriceSet {
-    presentmentMoney {
-      amount
-      currencyCode
-      __typename
-    }
     shopMoney {
       amount
       currencyCode
-      __typename
     }
-    __typename
   }
   product {
     id
     title
     totalVariants
-    __typename
   }
   quantity
   requiresShipping
@@ -85,39 +45,55 @@ fragment DraftOrderLineItemFragment on DraftOrderLineItem {
   variantTitle
   variant {
     id
-    __typename
   }
-  weight {
-    value
-    unit
-    __typename
+`
+
+const DraftOrderLineItemFragment = `
+  fragment DraftOrderLineItemFragment on DraftOrderLineItem {
+    ${DraftOrderLineItem}
   }
-  __typename
-}
 `
 
 const draftOrderFragment = `
-fragment DraftOrderDetailsFragment on DraftOrder {
-  id
-  acceptAutomaticDiscounts
-  lineItems(first: 50) {
-    pageInfo {
-      hasNextPage
-      __typename
-    }
-    edges {
-      cursor
-      node {
-        id
-        ...DraftOrderLineItemFragment
+  fragment DraftOrderDetailsFragment on DraftOrder {
+    id
+    acceptAutomaticDiscounts
+    lineItems(first: 50) {
+      pageInfo {
+        hasNextPage
+        __typename
+      }
+      edges {
+        cursor
+        node {
+          id
+          ...DraftOrderLineItemFragment
+          __typename
+        }
         __typename
       }
       __typename
     }
-    __typename
-  }
-  taxLines {
-    priceSet {
+    taxLines {
+      priceSet {
+        presentmentMoney {
+          amount
+          currencyCode
+          __typename
+        }
+        shopMoney {
+          amount
+          currencyCode
+          __typename
+        }
+        __typename
+      }
+      rate
+      ratePercentage
+      title
+      __typename
+    }
+    totalTaxSet {
       presentmentMoney {
         amount
         currencyCode
@@ -130,33 +106,71 @@ fragment DraftOrderDetailsFragment on DraftOrder {
       }
       __typename
     }
-    rate
-    ratePercentage
-    title
-    __typename
   }
-  totalTaxSet {
-    presentmentMoney {
-      amount
-      currencyCode
-      __typename
-    }
-    shopMoney {
-      amount
-      currencyCode
-      __typename
-    }
-    __typename
-  }
-}
 `
 
-const mutationCreate = `
+const mutationCreateDO = `
   mutation draftOrderCreate($input: DraftOrderInput!) {
     draftOrderCreate(input: $input) {
       draftOrder {
-        id
-        createdAt
+        ...DraftOrderDetailsFragment
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+
+  ${draftOrderFragment}
+  ${DraftOrderLineItemFragment}
+`;
+
+const mutationUpdateDO = `
+  mutation draftOrderUpdate($id: ID!, $input: DraftOrderInput!) {
+    draftOrderUpdate(id: $id, input: $input) {
+      draftOrder {
+        ...DraftOrderDetailsFragment
+      }
+      userErrors {
+        field
+        message
+      }
+    }
+  }
+
+  ${draftOrderFragment}
+  ${DraftOrderLineItemFragment}
+`;
+
+const mutationCalculateDO = `
+  mutation draftOrderCalculate($input: DraftOrderInput!) {
+    draftOrderCalculate(input: $input) {
+      calculatedDraftOrder {
+        lineItemsSubtotalPrice {
+          shopMoney {
+            amount
+            currencyCode
+          }
+        }
+        totalDiscountsSet {
+          shopMoney {
+            amount
+            currencyCode
+          }
+        }
+        totalPriceSet {
+          shopMoney {
+            amount
+            currencyCode
+          }
+        }
+        totalTaxSet {
+          shopMoney {
+            amount
+            currencyCode
+          }
+        }
       }
       userErrors {
         field
@@ -166,46 +180,13 @@ const mutationCreate = `
   }
 `;
 
-const mutationPut = `
-mutation draftOrderUpdate($id: ID!, $input: DraftOrderInput!) {
-  draftOrderUpdate(id: $id, input: $input) {
-    draftOrder {
-      ...DraftOrderDetailsFragment
-    }
-    userErrors {
-      field
-      message
-    }
-  }
-}
-
-${draftOrderFragment}
-${DraftOrderLineItemFragment}
-`;
-
-const mutationCalculate = `
-  mutation draftOrderCalculate($input: DraftOrderInput!, $hasDiscountsPermission: Boolean = true) {
+const mutationCalculateDOPerLines = `
+  mutation draftOrderCalculate($input: DraftOrderInput!) {
     draftOrderCalculate(input: $input) {
       calculatedDraftOrder {
-        taxLines {
-          priceSet {
-            shopMoney {
-              amount
-            }
-          }
-        }
+        acceptAutomaticDiscounts
         lineItems {
-          title
-          quantity
-          image {
-            url
-            altText
-          }
-          total: originalTotalSet {
-            shopMoney {
-              amount
-            }
-          }
+          ${DraftOrderLineItem}
         }
       }
       userErrors {
@@ -257,9 +238,9 @@ const queryGet = `
   }
 `;
 
-const postDraftOrder = async (input: draftOrderMutation, calculate = false) => {
+const createDraftOrder = async (input: draftOrderMutation) => {
   const { data, errors } = await shopify.request(
-    calculate ? mutationCalculate : mutationCreate,
+    mutationCreateDO,
     {
       variables: {
         hasDiscountsPermission: true,
@@ -273,9 +254,41 @@ const postDraftOrder = async (input: draftOrderMutation, calculate = false) => {
   return { data, errors }
 }
 
-const putDraftOrder = async (id: number, input: draftOrderMutation) => {
+const calculateDraftOrder = async (input: draftOrderMutation) => {
   const { data, errors } = await shopify.request(
-    mutationPut,
+    mutationCalculateDO,
+    {
+      variables: {
+        hasDiscountsPermission: true,
+        input: {
+          ...input,
+        }
+      },
+    }
+  );
+
+  return { data, errors }
+}
+
+const calculateDraftOrderPerLines = async (input: draftOrderMutation) => {
+  const { data, errors } = await shopify.request(
+    mutationCalculateDOPerLines,
+    {
+      variables: {
+        hasDiscountsPermission: true,
+        input: {
+          ...input,
+        }
+      },
+    }
+  );
+
+  return { data, errors }
+}
+
+const updateDraftOrder = async (id: number, input: draftOrderMutation) => {
+  const { data, errors } = await shopify.request(
+    mutationUpdateDO,
     {
       variables: {
         id: `gid://shopify/DraftOrder/${id}`,
@@ -301,7 +314,9 @@ const getDraftOrder = async (id: number) => {
 }
 
 export {
-  postDraftOrder,
+  createDraftOrder,
   getDraftOrder,
-  putDraftOrder
+  updateDraftOrder,
+  calculateDraftOrder,
+  calculateDraftOrderPerLines
 }
