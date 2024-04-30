@@ -9,10 +9,10 @@ export const loader = async ({
   
   if (!sku) {
     const { data } = await getFirstVariants()
-    return json({ data })
+    return json({ ...data.productVariants.edges })
   }
   
   const { data } = await getProductsByQuery(sku)
 
-  return json({ data })
+  return json([ ...data.productVariants.edges ])
 };

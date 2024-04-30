@@ -1,24 +1,16 @@
 import { InputNumber } from 'antd';
 import React, { createContext, useContext } from "react";
 
+import { DataType } from './orderTable';
 import ResourceSKU from "./resourceSKU";
-
-export interface Item {
-  key: string;
-  sku: string;
-  productName: string;
-  variantName: string;
-  quantity: number;
-  price: string;
-}
 
 export interface EditableCellProps {
   title?: React.ReactNode;
   editable?: boolean;
   children?: React.ReactNode;
-  dataIndex: keyof Item;
-  record: Item;
-  handleSave: (record: Item) => void;
+  dataIndex: keyof DataType;
+  record: DataType;
+  handleSave: (record: DataType) => void;
 }
 
 export const CellContext = createContext<EditableCellProps | null>(null);

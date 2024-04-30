@@ -278,6 +278,7 @@ const calculateDraftOrderPerLines = async (input: draftOrderMutation) => {
         hasDiscountsPermission: true,
         input: {
           ...input,
+          acceptAutomaticDiscounts: true
         }
       },
     }

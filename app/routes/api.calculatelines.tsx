@@ -19,7 +19,6 @@ const lineItems = [
 
 const input = {
   email: 'daihana.marin@gradiweb.com',
-  acceptAutomaticDiscounts: true,
   lineItems: lineItems,
 }
 
